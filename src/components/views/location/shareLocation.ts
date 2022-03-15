@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 import { MatrixClient } from "matrix-js-sdk/src/client";
-import { makeLocationContent } from "matrix-js-sdk/src/content-helpers";
+import { makeLocationContent, makeBeaconInfoContent } from "matrix-js-sdk/src/content-helpers";
 import { logger } from "matrix-js-sdk/src/logger";
 import { IEventRelation } from "matrix-js-sdk/src/models/event";
 import { LocationAssetType } from "matrix-js-sdk/src/@types/location";
@@ -32,6 +32,8 @@ export enum LocationShareType {
     Live = 'Live'
 }
 
+
+
 export const shareLocation = (
     client: MatrixClient,
     roomId: string,
@@ -40,6 +42,13 @@ export const shareLocation = (
     openMenu: () => void,
 ) => async (uri: string, ts: number) => {
     if (!uri) return false;
+    if (true || shareType === LocationShareType.Live) {
+        await client.unstable_createLiveBeacon(roomId, makeBeaconInfoContent(
+            100000,
+            true, /* isLive */
+        ), `${Date.now()}`);
+        return;
+    }
     try {
         const threadId = relation?.rel_type === THREAD_RELATION_TYPE.name ? relation.event_id : null;
         const assetType = shareType === LocationShareType.Pin ? LocationAssetType.Pin : LocationAssetType.Self;
